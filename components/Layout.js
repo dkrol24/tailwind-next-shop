@@ -8,6 +8,8 @@ import { Menu } from "@headlessui/react";
 import "react-toastify/dist/ReactToastify.css";
 import { Store } from "../utils/Store";
 import DropdownLink from "./DropdownLink";
+import { useRouter } from "next/router";
+import { SearchIcon } from "@heroicons/react/outline";
 
 export default function Layout({ title, children }) {
   const { status, data: session } = useSession();
@@ -24,6 +26,15 @@ export default function Layout({ title, children }) {
     dispatch({ type: "CART_RESET" });
     signOut({ callbackUrl: "/login" });
   };
+
+  const [query, setQuery] = useState("");
+
+  const router = useRouter();
+  const submitHandler = (e) => {
+    e.preventDefault();
+    router.push(`/search?query=${query}`);
+  };
+
   return (
     <>
       <Head>
@@ -40,7 +51,25 @@ export default function Layout({ title, children }) {
             <Link href="/">
               <a className="text-lg font-bold">amazona</a>
             </Link>
-            <div>
+            <form
+              onSubmit={submitHandler}
+              className="mx-auto  hidden w-full justify-center md:flex"
+            >
+              <input
+                onChange={(e) => setQuery(e.target.value)}
+                type="text"
+                className="rounded-tr-none rounded-br-none p-1 text-sm   focus:ring-0"
+                placeholder="Search products"
+              />
+              <button
+                className="rounded rounded-tl-none rounded-bl-none bg-amber-300 p-1 text-sm dark:text-black"
+                type="submit"
+                id="button-addon2"
+              >
+                <SearchIcon className="h-5 w-5"></SearchIcon>
+              </button>
+            </form>
+            <div className="flex justify-center align-middle">
               <Link href="/cart">
                 <a className="p-2">
                   Cart
@@ -57,7 +86,7 @@ export default function Layout({ title, children }) {
               ) : session?.user ? (
                 <Menu as="div" className="relative inline-block">
                   <Menu.Button className="text-blue-600">
-                    {session.user.name}
+                    <a className="p-2">{session.user.name}</a>
                   </Menu.Button>
                   <Menu.Items className="absolute right-0 w-56 origin-top-right bg-white  shadow-lg ">
                     <Menu.Item>
@@ -73,6 +102,16 @@ export default function Layout({ title, children }) {
                         Order History
                       </DropdownLink>
                     </Menu.Item>
+                    {session.user.isAdmin && (
+                      <Menu.Item>
+                        <DropdownLink
+                          className="dropdown-link"
+                          href="/admin/dashboard"
+                        >
+                          Admin Dashboard
+                        </DropdownLink>
+                      </Menu.Item>
+                    )}
                     <Menu.Item>
                       <a
                         className="dropdown-link"
